@@ -2825,7 +2825,7 @@ FSP Configuration
       General: Channel: 2
       General: Mode: Periodic
       General: Period: 1
-      General: Period Unit: Seconds
+      General: Period Unit: Milliseconds
       Output: Custom Waveform: GTIOA: Initial Output Level: Pin Level Low
       Output: Custom Waveform: GTIOA: Cycle End Output Level: Pin Level Retain
       Output: Custom Waveform: GTIOA: Compare Match Output Level: Pin Level Retain

@@ -36,8 +36,11 @@
 #include <hal_data.h>
 #include <_core/c_common.h>
 #include <_interfaces/i_spi/i_spi.h>
+#include <_interfaces/i_time/i_time.h>
 #include <_hal/h_drv8316/h_drv8316.h>
+#include <_hal/h_time/h_time.h>
 #include <_lib_impl_cust/impl_spi_motors/impl_spi_motors.h>
+#include <_lib_impl_cust/impl_time/impl_time.h>
 #include <adc.h>
 
 #define ALT_MOT
@@ -95,14 +98,11 @@ motor_120_driver_extended_cfg_t g_user_motor1_120_driver_extended_cfg;
 motor_wait_stop_flag_t g_wait_flag;
 
 
-extern uint8_t  com_u1_enable_write;           /* ICS write enable flag */
 
-
-volatile h_drv8316_t drv_mot1;
-volatile h_drv8316_t drv_mot2;
-
-volatile i_spi_t interface_mot1;
-volatile i_spi_t interface_mot2;
+h_drv8316_t drv_mot1;
+h_drv8316_t drv_mot2;
+i_spi_t interface_mot1;
+i_spi_t interface_mot2;
 
 
 /***********************************************************************************************************************
@@ -165,6 +165,9 @@ motor_cfg_t g_mot_120_degree1_cfg;
 motor_instance_t g_mot_120_degree1;
 void motor_structures_init(void);
 
+i_time_t i_time_interface_t;
+c_timespan_t ts0;
+c_timespan_t ts1;
 
 
 /***********************************************************************************************************************
@@ -219,35 +222,8 @@ void mtr_init(void)
   drv_mot2.registers.ctrl10.bits.DLYCMP_EN = 1;
   ret = h_drv8316_write_all_registers(&drv_mot2);
   ret = h_drv8316_read_all_registers(&drv_mot2);
-  volatile uint8_t x=0;
 
-
-    //int i;
-    uint8_t u1_conf_motor_type[] = CONF_MOTOR_TYPE;
-    uint8_t u1_conf_control[] = CONF_CONTROL;
-    uint8_t u1_conf_inverter[] = CONF_INVERTER;
-    g_u1_conf_motor_type_len = CONF_MOTOR_TYPE_LEN;
-    g_u1_conf_control_len    = CONF_CONTROL_LEN;
-    g_u1_conf_inverter_len   = CONF_INVERTER_LEN;
-    for (i = 0; i < g_u1_conf_motor_type_len; i++)
-    {
-        g_u1_conf_motor_type[i] = u1_conf_motor_type[i];
-    }
-    for (i = 0; i < g_u1_conf_control_len; i++)
-    {
-        g_u1_conf_control[i] = u1_conf_control[i];
-    }
-    for (i = 0; i < g_u1_conf_inverter_len; i++)
-    {
-        g_u1_conf_inverter[i] = u1_conf_inverter[i];
-    }
-    g_u2_conf_hw = 0x0008;                        /* 0000000000001000b */
-    g_u2_conf_sw = 0x0044;                        /* 0000000001000100b */
-    g_u2_conf_tool = 0x0200;                      /* 0000001000000000b */
-
-    motor_fsp_init();
-    software_init();                              /* Initialize private global variables */
-
+  motor_fsp_init();
 
 } /* End of function mtr_init() */
 
@@ -267,6 +243,10 @@ void mtr_main(void)
 #ifdef ALT_MOT
 static void board_ui(void)
 {
+
+
+    static uint8_t state0 = 0;
+
     uint8_t u1_temp_sw_signal;
     motor_120_control_wait_stop_flag_t u1_temp_flg_wait_stop = MOTOR_120_CONTROL_WAIT_STOP_FLAG_SET;
 
@@ -318,8 +298,56 @@ static void board_ui(void)
     motor_ext_settings_t settings;
     settings.current_max = 0.0f;
     settings.timeout_hall_ms = 0;
-    settings.percent = -20;
-    g_mot_120_degree0.p_api->speedSetOpenLoop(g_mot_120_degree0.p_ctrl,settings);
+    bool_t result = FALSE;
+    if (state0 == 0)
+    {
+        h_time_is_elapsed_ms (&ts0, 2500, &result);
+        if (result == TRUE)
+        {
+            settings.percent = -20;
+            g_mot_120_degree0.p_api->speedSetOpenLoop (g_mot_120_degree0.p_ctrl, settings);
+            h_time_update (&ts0);
+            state0 = 1;
+        }
+    }
+    else if (state0 == 1)
+    {
+        h_time_is_elapsed_ms (&ts0, 5000, &result);
+        if (result == TRUE)
+        {
+            settings.percent = -50;
+            g_mot_120_degree0.p_api->speedSetOpenLoop (g_mot_120_degree0.p_ctrl, settings);
+            h_time_update (&ts0);
+            state0 = 2;
+        }
+    }
+    else if (state0 == 2)
+    {
+        h_time_is_elapsed_ms (&ts0, 5000, &result);
+        if (result == TRUE)
+        {
+            //settings.percent = -35;
+            //g_mot_120_degree0.p_api->speedSetOpenLoop (g_mot_120_degree0.p_ctrl, settings);
+            g_f4_speed_ref = -1500;
+            g_mot_120_degree0.p_api->speedSet (g_mot_120_degree0.p_ctrl, (float) g_f4_speed_ref);
+            h_time_update (&ts0);
+            state0 = 3;
+        }
+    }
+    else if (state0 == 3)
+    {
+        h_time_is_elapsed_ms (&ts0, 5000, &result);
+        if (result == TRUE)
+        {
+            //settings.percent = -35;
+            //g_mot_120_degree0.p_api->speedSetOpenLoop (g_mot_120_degree0.p_ctrl, settings);
+            g_f4_speed_ref = -3000;
+            g_mot_120_degree0.p_api->speedSet (g_mot_120_degree0.p_ctrl, (float) g_f4_speed_ref);
+            h_time_update (&ts0);
+            state0 = 0;
+        }
+    }
+
 
 
 
@@ -334,7 +362,7 @@ static void board_ui(void)
 
                 g_mot_120_degree1.p_api->waitStopFlagGet(g_mot_120_degree1.p_ctrl, &u1_temp_flg_wait_stop);
             }
-            g_mot_120_degree1.p_api->run(g_mot_120_degree1.p_ctrl);
+            //g_mot_120_degree1.p_api->run(g_mot_120_degree1.p_ctrl);
         }
         break;
 
@@ -436,19 +464,6 @@ static void board_ui(void)
 * Arguments     : None
 * Return Value  : None
 ***********************************************************************************************************************/
-static void software_init(void)
-{
-    g_u1_motor0_status            = MOTOR_120_DEGREE_CTRL_STATUS_STOP;
-    g_f4_max_speed_rpm           = MTR_MAX_SPEED_RPM;
-    g_u1_sw_userif               = CONFIG_DEFAULT_UI;
-    g_u1_mode_system             = MOTOR_120_DEGREE_CTRL_EVENT_STOP;
-    g_u1_reset_req               = SW_OFF;
-    g_u1_stop_req                = MTR_FLG_SET;
-
-    /* ICS variables initialization */
-    com_u1_sw_userif             = CONFIG_DEFAULT_UI;
-    com_u1_mode_system           = MOTOR_120_DEGREE_CTRL_EVENT_STOP;
-} /* End of function software_init */
 
 /***********************************************************************************************************************
 * Function Name : g_poe_overcurrent
@@ -472,35 +487,7 @@ void g_poe_overcurrent(poeg_callback_args_t *p_args)
 
 
 
-void generic_timer_init(void)
-{
-    R_GPT_Open(g_timer_generic.p_ctrl,&g_timer_generic_cfg);
-    R_GPT_Start(g_timer_generic.p_ctrl);
-}
 
-
-volatile int32_t p0[20]={0};
-volatile int32_t p1[20]={0};
-uint32_t index_seconds = 0;
-
-void timer_generic_callback (timer_callback_args_t * p_args)
-{
-
-    custom_adc_capture();
-
-
-
-
-    if(index_seconds < 20)
-    {
-       g_mot_120_degree0.p_api->pulsesGet(g_mot_120_degree0.p_ctrl, &p0[index_seconds]);
-       g_mot_120_degree1.p_api->pulsesGet(g_mot_120_degree1.p_ctrl, &p1[index_seconds]);
-
-       index_seconds++;
-    }
-
-
-}
 
 void custom_adc_init(void)
 {
@@ -681,6 +668,17 @@ void motor_structures_init(void)
 static void motor_fsp_init(void)
 {
 
+
+    impl_time_init();
+    i_time_init(&i_time_interface_t,impl_time_init, impl_time_update);
+    h_time_init(&i_time_interface_t);
+
+    c_timespan_init(&ts0);
+    c_timespan_init(&ts1);
+    h_time_update(&ts0);
+    h_time_update(&ts1);
+
+
     motor_structures_init();
 
     motor_ext_cfg_t mot_ext_cfg;
@@ -709,8 +707,6 @@ static void motor_fsp_init(void)
 #endif
 
     //custom_adc_init();
-
-    generic_timer_init();
 
 
 
