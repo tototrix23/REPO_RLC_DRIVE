@@ -59,6 +59,7 @@ static void rm_motor_120_driver_reset(motor_120_driver_instance_ctrl_t * p_ctrl)
 static void rm_motor_120_driver_output_pwm(motor_120_driver_instance_ctrl_t * p_ctrl);
 static void rm_motor_120_driver_ctrl_start(motor_120_driver_instance_ctrl_t * p_ctrl);
 static void rm_motor_120_driver_ctrl_stop(motor_120_driver_instance_ctrl_t * p_ctrl);
+static void rm_motor_120_driver_ctrl_brake(motor_120_driver_instance_ctrl_t * p_ctrl);
 static void rm_motor_120_driver_set_uvw_duty(motor_120_driver_instance_ctrl_t * p_ctrl,
                                              float                              f_duty_u,
                                              float                              f_duty_v,
@@ -90,6 +91,9 @@ const motor_120_driver_api_t g_motor_120_driver_on_motor_120_driver =
     .currentOffsetCalc    = RM_MOTOR_120_DRIVER_CurrentOffsetCalc,
     .flagCurrentOffsetGet = RM_MOTOR_120_DRIVER_FlagCurrentOffsetGet,
     .parameterUpdate      = RM_MOTOR_120_DRIVER_ParameterUpdate,
+
+    .configSet            = RM_MOTOR_120_DRIVER_ExtCfgSet,
+    .brake                = RM_MOTOR_120_DRIVER_ExtBrake,
 };
 
 /*******************************************************************************************************************//**
@@ -1392,6 +1396,40 @@ fsp_err_t RM_MOTOR_120_DRIVER_ParameterUpdate (motor_120_driver_ctrl_t * const  
     return FSP_SUCCESS;
 }
 
+
+fsp_err_t RM_MOTOR_120_DRIVER_ExtCfgSet (motor_120_driver_ctrl_t * const p_ctrl, motor_ext_cfg_t * const p_cfg)
+{
+    fsp_err_t err = FSP_SUCCESS;
+    motor_120_driver_instance_ctrl_t * p_instance_ctrl = (motor_120_driver_instance_ctrl_t *) p_ctrl;
+    p_instance_ctrl->extCfg = p_cfg;
+    return err;
+}
+
+fsp_err_t RM_MOTOR_120_DRIVER_ExtBrake (motor_120_driver_ctrl_t * const p_ctrl)
+{
+    motor_120_driver_instance_ctrl_t * p_instance_ctrl = (motor_120_driver_instance_ctrl_t *) p_ctrl;
+
+    #if MOTOR_120_DRIVER_CFG_PARAM_CHECKING_ENABLE
+        FSP_ASSERT(NULL != p_instance_ctrl);
+        MOTOR_120_DRIVER_ERROR_RETURN(MOTOR_120_DRIVER_OPEN == p_instance_ctrl->open, FSP_ERR_NOT_OPEN);
+    #endif
+
+    p_instance_ctrl->u1_active = MOTOR_120_DRIVER_STATUS_INACTIVE;
+
+    p_instance_ctrl->f_iu_ad  = 0.0F;
+    p_instance_ctrl->f_iw_ad  = 0.0F;
+    p_instance_ctrl->f_vdc_ad = 0.0F;
+    p_instance_ctrl->f_refu   = 0.0F;
+    p_instance_ctrl->f_refv   = 0.0F;
+    p_instance_ctrl->f_refw   = 0.0F;
+    p_instance_ctrl->f_vu_ad  = 0.0F;
+    p_instance_ctrl->f_vv_ad  = 0.0F;
+    p_instance_ctrl->f_vw_ad  = 0.0F;
+
+    rm_motor_120_driver_ctrl_brake(p_instance_ctrl);
+
+    return FSP_SUCCESS;
+}
 /*******************************************************************************************************************//**
  * @} (end addtogroup MOTOR_120_DRIVER)
  **********************************************************************************************************************/
@@ -1537,6 +1575,33 @@ static void rm_motor_120_driver_ctrl_stop (motor_120_driver_instance_ctrl_t * p_
         rm_motor_120_driver_pin_cfg(p_extended_cfg->port_wn, p_ctrl->u4_gtiocb_general_low_cfg); /* Wn = "L" */
     }
 }                                                                                                /* End of function rm_motor_120_driver_ctrl_stop */
+
+static void rm_motor_120_driver_ctrl_brake(motor_120_driver_instance_ctrl_t * p_ctrl)
+{
+    motor_120_driver_extended_cfg_t * p_extended_cfg = (motor_120_driver_extended_cfg_t *) p_ctrl->p_cfg->p_extend;
+    three_phase_instance_t const    * p_three_phase  = p_extended_cfg->p_three_phase_instance;
+    timer_instance_t const          * p_u_phase_gpt  = p_three_phase->p_cfg->p_timer_instance[0];
+    timer_instance_t const          * p_v_phase_gpt  = p_three_phase->p_cfg->p_timer_instance[1];
+    timer_instance_t const          * p_w_phase_gpt  = p_three_phase->p_cfg->p_timer_instance[2];
+
+    if ((p_three_phase != NULL) &&
+        (p_u_phase_gpt != NULL) &&
+        (p_v_phase_gpt != NULL) &&
+        (p_w_phase_gpt != NULL))
+    {
+        /* PWM output disable */
+        R_GPT_OutputDisable(p_u_phase_gpt->p_ctrl, GPT_IO_PIN_GTIOCA_AND_GTIOCB);
+        R_GPT_OutputDisable(p_v_phase_gpt->p_ctrl, GPT_IO_PIN_GTIOCA_AND_GTIOCB);
+        R_GPT_OutputDisable(p_w_phase_gpt->p_ctrl, GPT_IO_PIN_GTIOCA_AND_GTIOCB);
+
+        rm_motor_120_driver_pin_cfg(p_extended_cfg->port_up, p_ctrl->u4_gtioca_general_low_cfg);  /* Up = "L" */
+        rm_motor_120_driver_pin_cfg(p_extended_cfg->port_un, p_ctrl->u4_gtiocb_general_high_cfg); /* Un = "H" */
+        rm_motor_120_driver_pin_cfg(p_extended_cfg->port_vp, p_ctrl->u4_gtioca_general_low_cfg);  /* Vp = "L" */
+        rm_motor_120_driver_pin_cfg(p_extended_cfg->port_vn, p_ctrl->u4_gtiocb_general_high_cfg); /* Vn = "H" */
+        rm_motor_120_driver_pin_cfg(p_extended_cfg->port_wp, p_ctrl->u4_gtioca_general_low_cfg);  /* Wp = "L" */
+        rm_motor_120_driver_pin_cfg(p_extended_cfg->port_wn, p_ctrl->u4_gtiocb_general_high_cfg); /* Wn = "H" */
+    }
+}
 
 /***********************************************************************************************************************
  * Function Name : rm_motor_120_driver_set_uvw_duty

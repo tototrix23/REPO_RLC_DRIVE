@@ -31,8 +31,8 @@
 #define MOTOR_120_DEGREE_OPEN                                  (0x4D314C53L)
 
 /* For Statemachine */
-#define MOTOR_120_DEGREE_STATEMACHINE_SIZE_STATE               (3)
-#define MOTOR_120_DEGREE_STATEMACHINE_SIZE_EVENT               (4)
+#define MOTOR_120_DEGREE_STATEMACHINE_SIZE_STATE               (4)
+#define MOTOR_120_DEGREE_STATEMACHINE_SIZE_EVENT               (5)
 
 /* State machine error flags */
 #define MOTOR_120_DEGREE_STATEMACHINE_ERROR_NONE               (0x00) /* None error flag */
@@ -65,31 +65,42 @@ static uint8_t rm_motor_120_degree_inactive(motor_120_degree_instance_ctrl_t * p
 static uint8_t rm_motor_120_degree_reset(motor_120_degree_instance_ctrl_t * p_ctrl);
 static uint8_t rm_motor_120_degree_error(motor_120_degree_instance_ctrl_t * p_ctrl);
 static uint8_t rm_motor_120_degree_nowork(motor_120_degree_instance_ctrl_t * p_ctrl);
+static uint8_t rm_motor_120_degree_brake (motor_120_degree_instance_ctrl_t * p_ctrl);
 
 static const uint8_t state_transition_table[MOTOR_120_DEGREE_STATEMACHINE_SIZE_EVENT][
     MOTOR_120_DEGREE_STATEMACHINE_SIZE_STATE
 ] =
 {
-/* State            0:MOTOR_120_DEGREE_CTRL_STATUS_STOP,
- *                  1:MOTOR_120_DEGREE_CTRL_STATUS_RUN,
- *                  2:MOTOR_120_DEGREE_CTRL_STATUS_ERROR */
+ /* State            0:MOTOR_120_DEGREE_CTRL_STATUS_STOP,
+  *                  1:MOTOR_120_DEGREE_CTRL_STATUS_RUN,
+  *                  2:MOTOR_120_DEGREE_CTRL_STATUS_ERROR
+  *                  3:MOTOR_120_DEGREE_CTRL_STATUS_BRAKE  */
 
-/* Event */
-/* 0:EVENT_STOP  */ {MOTOR_120_DEGREE_CTRL_STATUS_STOP,
-                     MOTOR_120_DEGREE_CTRL_STATUS_STOP,
-                     MOTOR_120_DEGREE_CTRL_STATUS_ERROR},
+ /* Event */
+ /* 0:EVENT_STOP  */ {MOTOR_120_DEGREE_CTRL_STATUS_STOP,
+                      MOTOR_120_DEGREE_CTRL_STATUS_STOP,
+                      MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
+                      MOTOR_120_DEGREE_CTRL_STATUS_STOP},
 
-/* 1:EVENT_RUN   */ {MOTOR_120_DEGREE_CTRL_STATUS_RUN,
-                     MOTOR_120_DEGREE_CTRL_STATUS_RUN,
-                     MOTOR_120_DEGREE_CTRL_STATUS_ERROR},
+ /* 1:EVENT_RUN   */ {MOTOR_120_DEGREE_CTRL_STATUS_RUN,
+                      MOTOR_120_DEGREE_CTRL_STATUS_RUN,
+                      MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
+                      MOTOR_120_DEGREE_CTRL_STATUS_RUN},
 
-/* 2:EVENT_ERROR */ {MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
-                     MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
-                     MOTOR_120_DEGREE_CTRL_STATUS_ERROR},
+ /* 2:EVENT_ERROR */ {MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
+                      MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
+                      MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
+                      MOTOR_120_DEGREE_CTRL_STATUS_ERROR},
 
-/* 3:EVENT_RESET */ {MOTOR_120_DEGREE_CTRL_STATUS_STOP,
-                     MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
-                     MOTOR_120_DEGREE_CTRL_STATUS_STOP},
+ /* 3:EVENT_RESET */ {MOTOR_120_DEGREE_CTRL_STATUS_STOP,
+                      MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
+                      MOTOR_120_DEGREE_CTRL_STATUS_STOP,
+                      MOTOR_120_DEGREE_CTRL_STATUS_STOP},
+
+ /* 4:EVENT_BRAKE */ {MOTOR_120_DEGREE_CTRL_STATUS_BRAKE,
+                      MOTOR_120_DEGREE_CTRL_STATUS_BRAKE,
+                      MOTOR_120_DEGREE_CTRL_STATUS_ERROR,
+                      MOTOR_120_DEGREE_CTRL_STATUS_BRAKE},
 };
 
 typedef uint8_t (* motor_120_degree_action_t)(motor_120_degree_instance_ctrl_t * p_ctrl);
@@ -97,15 +108,17 @@ typedef uint8_t (* motor_120_degree_action_t)(motor_120_degree_instance_ctrl_t *
 static const motor_120_degree_action_t motor_120_degree_action_table[MOTOR_120_DEGREE_STATEMACHINE_SIZE_EVENT][
     MOTOR_120_DEGREE_STATEMACHINE_SIZE_STATE] =
 {
-/* State                        0:STOP,                    1:RUN,                    2:ERROR */
+/* State                        0:STOP,                    1:RUN,                    2:ERROR                            3:BRAKE*/
 /* Event */
-/* 0:EVENT_STOP     */ {rm_motor_120_degree_inactive, rm_motor_120_degree_inactive, rm_motor_120_degree_nowork      },
+/* 0:EVENT_STOP     */ {rm_motor_120_degree_inactive, rm_motor_120_degree_inactive, rm_motor_120_degree_nowork   ,  rm_motor_120_degree_inactive   },
 
-/* 1:EVENT_RUN      */ {rm_motor_120_degree_active,   rm_motor_120_degree_nowork,   rm_motor_120_degree_nowork      },
+/* 1:EVENT_RUN      */ {rm_motor_120_degree_active,   rm_motor_120_degree_nowork,   rm_motor_120_degree_nowork   ,  rm_motor_120_degree_active   },
 
-/* 2:EVENT_ERROR    */ {rm_motor_120_degree_error,    rm_motor_120_degree_error,    rm_motor_120_degree_nowork      },
+/* 2:EVENT_ERROR    */ {rm_motor_120_degree_error,    rm_motor_120_degree_error,    rm_motor_120_degree_nowork   ,  rm_motor_120_degree_error    },
 
-/* 3:EVENT_RESET    */ {rm_motor_120_degree_reset,    rm_motor_120_degree_error,    rm_motor_120_degree_reset       },
+/* 3:EVENT_RESET    */ {rm_motor_120_degree_reset,    rm_motor_120_degree_error,    rm_motor_120_degree_reset    ,   rm_motor_120_degree_reset    },
+
+/* 4:EVENT_BRAKE    */ {rm_motor_120_degree_brake,    rm_motor_120_degree_brake,    rm_motor_120_degree_nowork,  rm_motor_120_degree_nowork    },
 };
 
 /* statemachine functions */
@@ -137,6 +150,13 @@ const motor_api_t g_motor_on_motor_120_degree =
     .waitStopFlagGet = RM_MOTOR_120_DEGREE_WaitStopFlagGet,
     .errorCheck      = RM_MOTOR_120_DEGREE_ErrorCheck,
     .functionSelect  = RM_MOTOR_120_DEGREE_FunctionSelect,
+
+    /** Extensions RAYLEC */
+    .configSet       = RM_MOTOR_120_DEGREE_ExtCfgSet,
+    .speedSetOpenLoop= RM_MOTOR_120_DEGREE_ExtSettingsSet,
+    .pulsesSet       = RM_MOTOR_120_DEGREE_ExtPulsesSet,
+    .pulsesGet       = RM_MOTOR_120_DEGREE_ExtPulsesGet,
+    .brake           = RM_MOTOR_120_DEGREE_ExtBrake,
 };
 
 /*******************************************************************************************************************//**
@@ -182,6 +202,12 @@ fsp_err_t RM_MOTOR_120_DEGREE_Open (motor_ctrl_t * const p_ctrl, motor_cfg_t con
         p_extended_cfg->p_motor_120_control_instance->p_api->open(p_extended_cfg->p_motor_120_control_instance->p_ctrl,
                                                                   p_extended_cfg->p_motor_120_control_instance->p_cfg);
     }
+
+    //---------------------------------------------
+    //Extension RAYLEC
+    //---------------------------------------------
+    p_extended_cfg->p_motor_120_control_instance->p_api->pulsesSet(p_extended_cfg->p_motor_120_control_instance->p_ctrl,&p_instance_ctrl->extPulses);
+    RM_MOTOR_120_DEGREE_ExtPulsesSet(p_instance_ctrl, 0);
 
     p_instance_ctrl->p_cfg = p_cfg;
 
@@ -378,6 +404,7 @@ fsp_err_t RM_MOTOR_120_DEGREE_SpeedSet (motor_ctrl_t * const p_ctrl, float const
     motor_120_degree_extended_cfg_t * p_extended_cfg =
         (motor_120_degree_extended_cfg_t *) p_instance_ctrl->p_cfg->p_extend;
 
+    p_instance_ctrl->extSettings.active = 0;
     p_instance_ctrl->f_speed_rpm = speed_rpm;
 
     if (p_extended_cfg->p_motor_120_control_instance != NULL)
@@ -629,7 +656,84 @@ fsp_err_t RM_MOTOR_120_DEGREE_FunctionSelect (motor_ctrl_t * const p_ctrl, motor
 /***********************************************************************************************************************
  * Private Functions
  **********************************************************************************************************************/
+fsp_err_t RM_MOTOR_120_DEGREE_ExtCfgSet(motor_ctrl_t *const p_ctrl, motor_ext_cfg_t const p_cfg)
+{
+    fsp_err_t err = FSP_SUCCESS;
+    motor_120_degree_instance_ctrl_t *p_instance_ctrl = (motor_120_degree_instance_ctrl_t*) p_ctrl;
 
+    p_instance_ctrl->extCfg = p_cfg;
+
+    motor_120_degree_extended_cfg_t *p_extended_cfg =
+            (motor_120_degree_extended_cfg_t*) p_instance_ctrl->p_cfg->p_extend;
+
+    if (p_extended_cfg->p_motor_120_control_instance != NULL)
+    {
+        err = p_extended_cfg->p_motor_120_control_instance->p_api->configSet (
+                p_extended_cfg->p_motor_120_control_instance->p_ctrl, &p_instance_ctrl->extCfg);
+    }
+
+    return err;
+}
+
+fsp_err_t RM_MOTOR_120_DEGREE_ExtSettingsSet(motor_ctrl_t *const p_ctrl, motor_ext_settings_t const settings)
+{
+    fsp_err_t err = FSP_SUCCESS;
+    motor_120_degree_instance_ctrl_t *p_instance_ctrl = (motor_120_degree_instance_ctrl_t*) p_ctrl;
+
+    p_instance_ctrl->extSettings.active = 1;
+    p_instance_ctrl->extSettings.voltage = 0.0;
+    p_instance_ctrl->extSettings.settings = settings;
+
+    motor_120_degree_extended_cfg_t *p_extended_cfg =
+            (motor_120_degree_extended_cfg_t*) p_instance_ctrl->p_cfg->p_extend;
+
+    if (p_extended_cfg->p_motor_120_control_instance != NULL)
+    {
+        err = p_extended_cfg->p_motor_120_control_instance->p_api->speedSetOpenLoop (
+                p_extended_cfg->p_motor_120_control_instance->p_ctrl, &p_instance_ctrl->extSettings);
+    }
+
+    return err;
+}
+
+fsp_err_t RM_MOTOR_120_DEGREE_ExtPulsesSet(motor_ctrl_t * const p_ctrl, int32_t const value)
+{
+    motor_120_degree_instance_ctrl_t *p_instance_ctrl = (motor_120_degree_instance_ctrl_t*) p_ctrl;
+    FSP_CRITICAL_SECTION_DEFINE;
+    FSP_CRITICAL_SECTION_ENTER;
+
+    p_instance_ctrl->extPulses.pulses = value;
+
+    FSP_CRITICAL_SECTION_EXIT;
+    return FSP_SUCCESS;
+}
+
+fsp_err_t RM_MOTOR_120_DEGREE_ExtPulsesGet(motor_ctrl_t * const p_ctrl, int32_t * const value)
+{
+    motor_120_degree_instance_ctrl_t *p_instance_ctrl = (motor_120_degree_instance_ctrl_t*) p_ctrl;
+    FSP_CRITICAL_SECTION_DEFINE;
+    FSP_CRITICAL_SECTION_ENTER;
+
+    *value = p_instance_ctrl->extPulses.pulses;
+
+    FSP_CRITICAL_SECTION_EXIT;
+    return FSP_SUCCESS;
+}
+
+fsp_err_t RM_MOTOR_120_DEGREE_ExtBrake(motor_ctrl_t * const p_ctrl)
+{
+    fsp_err_t err = FSP_SUCCESS;
+    motor_120_degree_instance_ctrl_t * p_instance_ctrl = (motor_120_degree_instance_ctrl_t *) p_ctrl;
+
+#if MOTOR_120_DEGREE_CFG_PARAM_CHECKING_ENABLE
+    FSP_ASSERT(NULL != p_instance_ctrl);
+    MOTOR_120_DEGREE_ERROR_RETURN(MOTOR_120_DEGREE_OPEN == p_instance_ctrl->open, FSP_ERR_NOT_OPEN);
+#endif
+
+    rm_motor_120_degree_statemachine_event(p_instance_ctrl, MOTOR_120_DEGREE_CTRL_EVENT_BRAKE);
+
+    return err;
+}
 /*****  For Status Transition *****/
 
 /***********************************************************************************************************************
@@ -671,6 +775,20 @@ static uint8_t rm_motor_120_degree_inactive (motor_120_degree_instance_ctrl_t * 
 
     return (uint8_t) err;
 }                                      /* End of function rm_motor_120_degree_inactive() */
+
+static uint8_t rm_motor_120_degree_brake (motor_120_degree_instance_ctrl_t * p_ctrl)
+{
+    fsp_err_t err = FSP_SUCCESS;
+    motor_120_degree_extended_cfg_t * p_extended_cfg = (motor_120_degree_extended_cfg_t *) p_ctrl->p_cfg->p_extend;
+
+    if (p_extended_cfg->p_motor_120_control_instance != NULL)
+    {
+        err = p_extended_cfg->p_motor_120_control_instance->p_api->brake(
+            p_extended_cfg->p_motor_120_control_instance->p_ctrl);
+    }
+
+    return (uint8_t) err;
+}
 
 /***********************************************************************************************************************
  * Function Name : rm_motor_120_degree_nowork
@@ -950,7 +1068,13 @@ static uint16_t rm_motor_120_degree_error_check (motor_120_degree_instance_ctrl_
         (motor_120_control_instance_t *) p_extended_cfg->p_motor_120_control_instance;
 
     /* Over current error check */
-    u2_error_flags |= rm_motor_check_over_current_error(f_iu, f_iv, f_iw, p_extended_cfg->f_overcurrent_limit);
+    if (p_ctrl->extSettings.active == 1)
+    {
+        if (p_ctrl->extSettings.settings.current_max > 0.1)
+            u2_error_flags |= rm_motor_check_over_current_error (f_iu, f_iv, f_iw,
+                                                                 p_ctrl->extSettings.settings.current_max);
+    }
+    else u2_error_flags |= rm_motor_check_over_current_error (f_iu, f_iv, f_iw, p_extended_cfg->f_overcurrent_limit);
 
     /* Over voltage error check */
     u2_error_flags |= rm_motor_check_over_voltage_error(f_vdc, p_extended_cfg->f_overvoltage_limit);

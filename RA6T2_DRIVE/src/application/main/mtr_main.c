@@ -166,6 +166,7 @@ motor_instance_t g_mot_120_degree1;
 void motor_structures_init(void);
 
 
+
 /***********************************************************************************************************************
 * Function Name : mtr_init
 * Description   : Initialization for Motor Control
@@ -308,9 +309,17 @@ static void board_ui(void)
         }
         break;
     }
-    g_f4_speed_ref = -3000.0;
+    g_f4_speed_ref = 800.0;
     g_u1_stop_req = MTR_FLG_CLR;
-    g_mot_120_degree0.p_api->speedSet(g_mot_120_degree0.p_ctrl, (float)g_f4_speed_ref);
+    //g_mot_120_degree0.p_api->speedSet(g_mot_120_degree0.p_ctrl, (float)g_f4_speed_ref);
+
+
+
+    motor_ext_settings_t settings;
+    settings.current_max = 0.0f;
+    settings.timeout_hall_ms = 0;
+    settings.percent = -20;
+    g_mot_120_degree0.p_api->speedSetOpenLoop(g_mot_120_degree0.p_ctrl,settings);
 
 
 
@@ -353,9 +362,15 @@ static void board_ui(void)
         }
         break;
     }
-    g_f4_speed_ref = 1000.0;
+    g_f4_speed_ref = 800.0;
     g_u1_stop_req = MTR_FLG_CLR;
-    g_mot_120_degree1.p_api->speedSet(g_mot_120_degree1.p_ctrl, (float)g_f4_speed_ref);
+    //g_mot_120_degree1.p_api->speedSet(g_mot_120_degree1.p_ctrl, (float)g_f4_speed_ref);
+
+
+    settings.current_max = 0.0f;
+    settings.timeout_hall_ms = 0;
+    settings.percent = 20;
+    g_mot_120_degree1.p_api->speedSetOpenLoop(g_mot_120_degree1.p_ctrl,settings);
 
 }
 #else
@@ -463,10 +478,28 @@ void generic_timer_init(void)
     R_GPT_Start(g_timer_generic.p_ctrl);
 }
 
+
+volatile int32_t p0[20]={0};
+volatile int32_t p1[20]={0};
+uint32_t index_seconds = 0;
+
 void timer_generic_callback (timer_callback_args_t * p_args)
 {
 
     custom_adc_capture();
+
+
+
+
+    if(index_seconds < 20)
+    {
+       g_mot_120_degree0.p_api->pulsesGet(g_mot_120_degree0.p_ctrl, &p0[index_seconds]);
+       g_mot_120_degree1.p_api->pulsesGet(g_mot_120_degree1.p_ctrl, &p1[index_seconds]);
+
+       index_seconds++;
+    }
+
+
 }
 
 void custom_adc_init(void)
@@ -650,6 +683,10 @@ static void motor_fsp_init(void)
 
     motor_structures_init();
 
+    motor_ext_cfg_t mot_ext_cfg;
+    mot_ext_cfg.motor_type = MOTOR_TYPE_BLDC;
+    mot_ext_cfg.pulses_counting_reverse = 0;
+
 
     R_POEG_Open(g_poeg0.p_ctrl, g_poeg0.p_cfg);
 
@@ -657,8 +694,12 @@ static void motor_fsp_init(void)
     custom_adc_init();
 #ifdef ALT_MOT
     g_mot_120_degree0.p_api->open(g_mot_120_degree0.p_ctrl, g_mot_120_degree0.p_cfg);
+    g_mot_120_degree0.p_api->configSet(g_mot_120_degree0.p_ctrl,mot_ext_cfg);
+    g_mot_120_degree0.p_api->pulsesSet(g_mot_120_degree0.p_ctrl,0);
     g_mot_120_degree0.p_api->statusGet(g_mot_120_degree0.p_ctrl, &g_u1_motor0_status);
     g_mot_120_degree1.p_api->open(g_mot_120_degree1.p_ctrl, g_mot_120_degree1.p_cfg);
+    g_mot_120_degree1.p_api->configSet(g_mot_120_degree1.p_ctrl,mot_ext_cfg);
+    g_mot_120_degree1.p_api->pulsesSet(g_mot_120_degree1.p_ctrl,0);
     //g_mot_120_degree1.p_api->statusGet(g_mot_120_degree1.p_ctrl, &g_u1_motor1_status);
 #else
     g_motor_120_degree0.p_api->open(g_motor_120_degree0.p_ctrl, g_motor_120_degree0.p_cfg);
@@ -689,43 +730,13 @@ static void motor_fsp_init(void)
     g_mot_120_degree0.p_api->reset(g_mot_120_degree0.p_ctrl);
     g_mot_120_degree1.p_api->reset(g_mot_120_degree1.p_ctrl);
     R_BSP_SoftwareDelay(200, BSP_DELAY_UNITS_MILLISECONDS);
-    volatile uint8_t x=0;
 
 
 
-    /* RMW */
-    /*g_user_motor_cfg = *(g_mot_120_degree0_ctrl.p_cfg);
-    g_user_motor_120_degree_extended_cfg = *(motor_120_degree_extended_cfg_t *)g_user_motor_cfg.p_extend;
-    g_user_motor_cfg.p_extend = &g_user_motor_120_degree_extended_cfg;
-    g_mot_120_degree0_ctrl.p_cfg = &g_user_motor_cfg;
+    //g_mot_120_degree0.p_api->stop(g_mot_120_degree0.p_ctrl);
+    //g_mot_120_degree1.p_api->brake(g_mot_120_degree1.p_ctrl);
 
-    g_user_motor_120_control_cfg = *(g_mot_120_control_hall0_ctrl.p_cfg);
-    g_user_motor_120_control_extended_cfg =
-        *(motor_120_control_hall_extended_cfg_t *)g_user_motor_120_control_cfg.p_extend;
-    g_user_motor_120_control_cfg.p_extend = &g_user_motor_120_control_extended_cfg;
-
-    g_user_motor_120_driver_cfg = *(g_mot_120_driver0_ctrl.p_cfg);
-    g_user_motor_120_driver_extended_cfg = *(motor_120_driver_extended_cfg_t *)g_user_motor_120_driver_cfg.p_extend;
-    g_user_motor_120_driver_cfg.p_extend = &g_user_motor_120_driver_extended_cfg;*/
-
-
-
-/*
-    g_user_motor1_cfg = *(g_motor_120_degree1_ctrl.p_cfg);
-    g_user_motor1_120_degree_extended_cfg = *(motor_120_degree_extended_cfg_t *)g_user_motor1_cfg.p_extend;
-    g_user_motor1_cfg.p_extend = &g_user_motor1_120_degree_extended_cfg;
-    g_motor_120_degree1_ctrl.p_cfg = &g_user_motor1_cfg;
-
-    g_user_motor1_120_control_cfg = *(g_motor_120_control_hall1_ctrl.p_cfg);
-    g_user_motor1_120_control_extended_cfg =
-        *(motor_120_control_hall_extended_cfg_t *)g_user_motor1_120_control_cfg.p_extend;
-    g_user_motor1_120_control_cfg.p_extend = &g_user_motor1_120_control_extended_cfg;
-
-    g_user_motor1_120_driver_cfg = *(g_motor_120_driver1_ctrl.p_cfg);
-    g_user_motor1_120_driver_extended_cfg = *(motor_120_driver_extended_cfg_t *)g_user_motor1_120_driver_cfg.p_extend;
-    g_user_motor1_120_driver_cfg.p_extend = &g_user_motor1_120_driver_extended_cfg;*/
-
-
+    //while(1);
 
 } /* End of function motor_fsp_init */
 

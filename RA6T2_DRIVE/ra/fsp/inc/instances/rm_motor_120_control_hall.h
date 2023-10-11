@@ -114,6 +114,12 @@ typedef struct st_motor_120_control_hall_instance_ctrl
 
     external_irq_callback_args_t hall_interrupt_args;          ///< For call IRQ callbackSet function
     timer_callback_args_t        timer_args;                   ///< For call timer callbackSet function
+
+    /* Extensions RAYLEC */
+    uint8_t previous_u1_signal;
+    motor_ext_cfg_t *extCfg;
+    motor_ext_settings_api_t *extSettings;
+    motor_ext_pulses_t *extPulses;
 } motor_120_control_hall_instance_ctrl_t;
 
 /**********************************************************************************************************************
@@ -165,6 +171,13 @@ fsp_err_t RM_MOTOR_120_CONTROL_HALL_VoltageRefGet(motor_120_control_ctrl_t * con
 
 fsp_err_t RM_MOTOR_120_CONTROL_HALL_ParameterUpdate(motor_120_control_ctrl_t * const      p_ctrl,
                                                     motor_120_control_cfg_t const * const p_cfg);
+
+/** Extensions RAYLEC */
+fsp_err_t RM_MOTOR_120_CONTROL_HALL_ExtCfgSet (motor_120_control_ctrl_t * const p_ctrl, motor_ext_cfg_t * const p_cfg);
+fsp_err_t RM_MOTOR_120_CONTROL_HALL_ExtFreeSettingsSet(motor_120_control_ctrl_t * const p_ctrl, motor_ext_settings_api_t * const settings);
+fsp_err_t RM_MOTOR_120_CONTROL_HALL_ExtPulsesSetPtr(motor_120_control_ctrl_t * const p_ctrl, motor_ext_pulses_t * const ptr);
+fsp_err_t RM_MOTOR_120_CONTROL_HALL_ExtBrake(motor_120_control_ctrl_t * const p_ctrl);
+
 
 /* Common macro for FSP header files. There is also a corresponding FSP_HEADER macro at the top of this file. */
 FSP_FOOTER

@@ -43,7 +43,7 @@
 /* Register definitions, common services and error codes. */
 #include "bsp_api.h"
 #include "rm_motor_120_driver_api.h"
-
+#include "rm_motor_extension.h"
 /* Common macro for FSP header files. There is also a corresponding FSP_FOOTER macro at the end of this file. */
 FSP_HEADER
 
@@ -314,6 +314,12 @@ typedef struct st_motor_120_control_api
      * @param[in]  p_cfg        Pointer to configuration structure include update parameters.
      */
     fsp_err_t (* parameterUpdate)(motor_120_control_ctrl_t * const p_ctrl, motor_120_control_cfg_t const * const p_cfg);
+
+    /** Extensions RAYLEC */
+    fsp_err_t (* configSet)(motor_120_control_ctrl_t * const p_ctrl, motor_ext_cfg_t * const p_cfg);
+    fsp_err_t (* speedSetOpenLoop)(motor_120_control_ctrl_t * const p_ctrl, motor_ext_settings_api_t * const settings);
+    fsp_err_t (* pulsesSet)(motor_120_control_ctrl_t * const p_ctrl, motor_ext_pulses_t * const ptr);
+    fsp_err_t (* brake)(motor_120_control_ctrl_t * const p_ctrl);
 } motor_120_control_api_t;
 
 /** This structure encompasses everything that is needed to use an instance of this interface. */
