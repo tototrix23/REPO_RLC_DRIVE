@@ -1624,6 +1624,23 @@ static void rm_motor_120_control_hall_voltage_ref_set (motor_120_control_hall_in
                 p_ctrl->f4_v_ref = rm_motor_120_control_hall_limitf (f4_temp, p_ctrl->p_cfg->f4_max_drive_v,
                                                                      p_ctrl->p_cfg->f4_min_drive_v);
 
+                p_ctrl->u4_cnt_speed_pi++;
+                if (p_ctrl->p_cfg->u4_speed_pi_decimation < p_ctrl->u4_cnt_speed_pi)
+                /* check PI period  */
+                {
+                    p_ctrl->u4_cnt_speed_pi = 0;
+
+                    p_ctrl->f4_pi_ctrl_err = p_ctrl->f4_ref_speed_rad_ctrl - p_ctrl->f4_speed_rad;
+                    f4_temp = rm_motor_120_control_hall_pi_ctrl (p_ctrl);
+
+                    /* limit voltage */
+                    /*p_ctrl->f4_v_ref = rm_motor_120_control_hall_limitf (f4_temp, p_ctrl->p_cfg->f4_max_drive_v,
+                                                                         p_ctrl->p_cfg->f4_min_drive_v);*/
+                }
+
+                p_ctrl->f4_ref_speed_rad_ctrl = p_ctrl->f4_speed_rad;
+                p_ctrl->f4_pi_ctrl_refi = p_ctrl->f4_v_ref;
+
             }
             else
             {
