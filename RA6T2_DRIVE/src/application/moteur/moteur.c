@@ -106,6 +106,7 @@ void motor_structures_init(void)
 
     motor0.motor_ctrl_instance = &g_mot_120_degree0;
     motor0.motor_driver_instance = &g_mot_120_driver0;
+    motor0.motor_hall_instance = &g_mot_120_control_hall0;
     //---------------------------------------------------------------------
     // MOTOR1
     //---------------------------------------------------------------------
@@ -157,7 +158,7 @@ void motor_structures_init(void)
 
     motor1.motor_ctrl_instance = &g_mot_120_degree1;
     motor1.motor_driver_instance = &g_mot_120_driver1;
-
+    motor1.motor_hall_instance = &g_mot_120_control_hall1;
 
 }
 
@@ -200,6 +201,52 @@ void motor_init_fsp(void)
 
 }
 
+return_t motor_is_speed_achieved(st_motor_t *mot,bool_t *res)
+{
+    return_t ret = X_RET_OK;
+
+#if FW_CHECK_PARAM_ENABLE == 1
+    ASSERT(mot  != NULL)
+    ASSERT(res  != NULL)
+#endif
+
+    motor_120_control_hall_instance_ctrl_t * p_instance_ctrl = (motor_120_control_hall_instance_ctrl_t *) mot->motor_hall_instance;
+
+    if(p_instance_ctrl->active == MOTOR_120_CONTROL_STATUS_ACTIVE)
+    {
+        if(p_instance_ctrl->extSettings->active == TRUE)
+        {
+            float diff = fabsf(p_instance_ctrl->f4_v_ref - p_instance_ctrl->extSettings->voltage);
+            if(diff <= 0.02f)
+            {
+                *res = TRUE;
+            }
+            else
+            {
+                *res = FALSE;
+            }
+        }
+        else
+        {
+            float delta = p_instance_ctrl->f4_ref_speed_rad * 0.02f;
+            if(  (p_instance_ctrl->f4_speed_rad >= (p_instance_ctrl->f4_ref_speed_rad-delta)) &&
+                 (p_instance_ctrl->f4_speed_rad <= (p_instance_ctrl->f4_ref_speed_rad+delta)))
+            {
+                *res = TRUE;
+            }
+            else
+            {
+                *res = FALSE;
+            }
+        }
+    }
+    else
+    {
+        *res = FALSE;
+    }
+
+    return ret;
+}
 static void gpt_periodset (timer_ctrl_t * const p_ctrl, uint32_t const period_counts, uint32_t const value)
 {
     gpt_instance_ctrl_t * p_instance_ctrl = (gpt_instance_ctrl_t *) p_ctrl;

@@ -40,27 +40,32 @@
 // FIRMWARE
 //
 //========================================================================
-#define FW_CHECK_PARAM_ENABLE         1
+#define FW_CHECK_PARAM_ENABLE   1
 
+//------------------------------------------------------------------------
 // ADC
-#define ADC_CHANNEL_VIN       14
-#define ADC_CHANNEL_VBATT     15
-#define ADC_CHANNEL_IIN        5
-#define ADC_CHANNEL_VHALL1    26
-#define ADC_CHANNEL_VHALL2    27
+//------------------------------------------------------------------------
+// Definition des canaux à utiliser
+#define ADC_CHANNEL_VIN         14
+#define ADC_CHANNEL_VBATT       15
+#define ADC_CHANNEL_IIN         5
+#define ADC_CHANNEL_VHALL1      26
+#define ADC_CHANNEL_VHALL2      27
 
+// Définition de l'échantillonage
+#define ADC_VIN_AVERAGE         32.0f
+#define ADC_VBATT_AVERAGE       32.0f
+#define ADC_IIN_AVERAGE         128.0f
+#define ADC_VHALL1_AVERAGE      32.0f
+#define ADC_VHALL2_AVERAGE      32.0f
 
-#define ADC_VIN_AVERAGE        64.0f
-#define ADC_VBATT_AVERAGE      64.0f
-#define ADC_IIN_AVERAGE       256.0f
-#define ADC_VHALL1_AVERAGE     64.0f
-#define ADC_VHALL2_AVERAGE     64.0f
+// Adaptation des niveau en fonction des ponts diviseurs
+#define ADC_VIN_ADAPT(f)        (f*10.1f)
+#define ADC_VBATT_ADAPT(f)      (f*10.1f)
+#define ADC_IIN_ADAPT(f)        ((f/20.0f)/0.01f)
+#define ADC_VHALL1_ADAPT(f)     (f*4.3222f)
+#define ADC_VHALL2_ADAPT(f)     (f*4.3222f)
 
-#define ADC_VIN_ADAPT(f) (f*10.1f)
-#define ADC_VBATT_ADAPT(f) (f*10.1f)
-#define ADC_IIN_ADAPT(f) ((f/20.0f)/0.01f)
-#define ADC_VHALL1_ADAPT(f) (f*4.3222f)
-#define ADC_VHALL2_ADAPT(f) (f*4.3222f)
 
 
 #endif /* CONFIG_COMPILER_CONFIG_H_ */

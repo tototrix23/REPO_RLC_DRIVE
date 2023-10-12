@@ -23,6 +23,7 @@ typedef struct st_motor_t
 {
     motor_instance_t *motor_ctrl_instance;
     motor_120_driver_instance_t *motor_driver_instance;
+    motor_120_control_instance_t *motor_hall_instance;
     uint8_t status;
     uint16_t check_error;
 }st_motor_t;
@@ -34,4 +35,7 @@ extern st_motor_t motor1;
 
 void motor_structures_init(void);
 void motor_init_fsp(void);
+
+return_t motor_is_speed_achieved(st_motor_t *mot,bool_t *res);
+
 #endif /* APPLICATION_MOTEUR_MOTEUR_H_ */

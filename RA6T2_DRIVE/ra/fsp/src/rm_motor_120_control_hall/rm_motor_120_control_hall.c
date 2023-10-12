@@ -1616,9 +1616,9 @@ static void rm_motor_120_control_hall_voltage_ref_set (motor_120_control_hall_in
             if (p_ctrl->extSettings->active == 1)
             {
                 if (p_ctrl->f4_v_ref > p_ctrl->extSettings->voltage)
-                    p_ctrl->f4_v_ref = p_ctrl->f4_v_ref - (float) 0.01;
+                    p_ctrl->f4_v_ref = p_ctrl->f4_v_ref - (float) 0.01f;
                 else if (p_ctrl->f4_v_ref < p_ctrl->extSettings->voltage)
-                    p_ctrl->f4_v_ref = p_ctrl->f4_v_ref + (float) 0.01;
+                    p_ctrl->f4_v_ref = p_ctrl->f4_v_ref + (float) 0.01f;
 
                 f4_temp = p_ctrl->f4_v_ref;
                 p_ctrl->f4_v_ref = rm_motor_120_control_hall_limitf (f4_temp, p_ctrl->p_cfg->f4_max_drive_v,
