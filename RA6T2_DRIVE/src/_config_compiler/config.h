@@ -17,12 +17,16 @@
 
 #undef DEBUG_MODE
 
-
+//========================================================================
+//
+// RLIB
+//
+//========================================================================
 #define R_LIB_UNIT_TEST_MODE
 #define TARGET                        TARGET_RENESAS_RA
 #define OPERATING_SYSTEM              T_OS_BARE_METAL
 
-#define LOG_ENABLE                    0
+#define LOG_ENABLE                    1
 #define R_LIB_CHECK_PARAM_ENABLE      1
 #define R_LIB_ASSERT_MODE             R_LIB_ASSERT_RETURN_CODE
 #define R_LIB_LOG_LEVEL               LOG_LVL_WARN
@@ -31,8 +35,32 @@
 #define SALLOC_SIZE_BYTES             4000U
 
 
+//========================================================================
+//
 // FIRMWARE
+//
+//========================================================================
 #define FW_CHECK_PARAM_ENABLE         1
-#define FW_LOG_CHANNEL                1
+
+// ADC
+#define ADC_CHANNEL_VIN       14
+#define ADC_CHANNEL_VBATT     15
+#define ADC_CHANNEL_IIN        5
+#define ADC_CHANNEL_VHALL1    26
+#define ADC_CHANNEL_VHALL2    27
+
+
+#define ADC_VIN_AVERAGE        64.0f
+#define ADC_VBATT_AVERAGE      64.0f
+#define ADC_IIN_AVERAGE       256.0f
+#define ADC_VHALL1_AVERAGE     64.0f
+#define ADC_VHALL2_AVERAGE     64.0f
+
+#define ADC_VIN_ADAPT(f) (f*10.1f)
+#define ADC_VBATT_ADAPT(f) (f*10.1f)
+#define ADC_IIN_ADAPT(f) ((f/20.0f)/0.01f)
+#define ADC_VHALL1_ADAPT(f) (f*4.3222f)
+#define ADC_VHALL2_ADAPT(f) (f*4.3222f)
+
 
 #endif /* CONFIG_COMPILER_CONFIG_H_ */

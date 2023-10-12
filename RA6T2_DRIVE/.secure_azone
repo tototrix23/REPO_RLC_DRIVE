@@ -57,6 +57,10 @@
             <slot name="IRQ31" secure="true"/>
             <slot name="IRQ32" secure="true"/>
             <slot name="IRQ33" secure="true"/>
+            <slot name="IRQ34" secure="true"/>
+            <slot name="IRQ35" secure="true"/>
+            <slot name="IRQ36" secure="true"/>
+            <slot name="IRQ37" secure="true"/>
         </peripheral>
         <peripheral name="PORT2" group="PORT">
             <slot name="P212" secure="true"/>
@@ -99,6 +103,8 @@
             <slot name="PC07" secure="true"/>
             <slot name="PC08" secure="true"/>
             <slot name="PC09" secure="true"/>
+            <slot name="PC10" secure="true"/>
+            <slot name="PC11" secure="true"/>
             <slot name="PC13" secure="true"/>
         </peripheral>
         <peripheral name="PORTD" group="PORT">

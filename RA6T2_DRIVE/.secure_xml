@@ -104,6 +104,8 @@
       <configSetting altId="pd13.input" configurationId="pd13"/>
       <configSetting altId="pd14.input" configurationId="pd14"/>
       <configSetting altId="pd15.output.low" configurationId="pd15"/>
+      <configSetting altId="sci1.rxd1.pc11" configurationId="sci1.rxd1" isUsedByDriver="true"/>
+      <configSetting altId="sci1.txd1.pc10" configurationId="sci1.txd1" isUsedByDriver="true"/>
       <configSetting altId="sci3.rxd3.pb12" configurationId="sci3.rxd3" isUsedByDriver="true"/>
       <configSetting altId="sci3.sck3.pb14" configurationId="sci3.sck3" isUsedByDriver="true"/>
       <configSetting altId="sci3.txd3.pb13" configurationId="sci3.txd3" isUsedByDriver="true"/>

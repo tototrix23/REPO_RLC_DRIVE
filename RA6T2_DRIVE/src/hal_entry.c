@@ -13,10 +13,9 @@ void hal_entry(void) {
     mtr_init();
 
     /* Main Routine */
-    while(1)
-    {
+
         mtr_main();
-    }
+
 
 #if BSP_TZ_SECURE_BUILD
     /* Enter non-secure code */

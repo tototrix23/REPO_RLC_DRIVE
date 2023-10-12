@@ -18,5 +18,5 @@
 #define TIMER_LIB_MS  1
 return_t impl_time_init(void);
 return_t impl_time_update(c_timespan_h handler);
-
+void impl_time_start_adc(void);
 #endif /* LIB_IMPL_CUST_IMPL_TIME_IMPL_TIME_H_ */

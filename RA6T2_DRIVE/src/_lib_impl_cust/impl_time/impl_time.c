@@ -7,9 +7,15 @@
 #include <hal_data.h>
 #include <r_gpt.h>
 #include "impl_time.h"
-
+#include <adc/adc.h>
 static uint64_t impl_time_ms_global = 0;
 
+#undef  LOG_LEVEL
+#define LOG_LEVEL     LOG_LVL_DEBUG
+#undef  LOG_MODULE
+#define LOG_MODULE    "impl_time"
+
+uint8_t start_adc=0;
 return_t impl_time_init(void)
 {
     return_t err = X_RET_OK;
@@ -38,16 +44,20 @@ return_t impl_time_update(c_timespan_h handler)
     return err;
 }
 
+void impl_time_start_adc(void)
+{
+    start_adc=1;
+}
 
 void timer_generic_callback (timer_callback_args_t * p_args)
 {
-    volatile uint8_t xxx=0;
+
     if(NULL != p_args)
     {
-
         if (TIMER_EVENT_CYCLE_END  == p_args->event)
         {
             impl_time_ms_global += TIMER_LIB_MS;
+            if(start_adc == 1) adc_capture();
         }
     }
 
