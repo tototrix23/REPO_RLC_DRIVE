@@ -6,8 +6,8 @@
  */
 #include <config.h>
 #include <_core/c_protected/c_protected.h>
+#include <motor/motor.h>
 #include "adc.h"
-#include <moteur/moteur.h>
 
 st_adc_t adc_inst;
 

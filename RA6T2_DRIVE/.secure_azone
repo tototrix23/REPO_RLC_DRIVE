@@ -84,7 +84,6 @@
         </peripheral>
         <peripheral name="PORTB" group="PORT">
             <slot name="PB01" secure="true"/>
-            <slot name="PB03" secure="true"/>
             <slot name="PB04" secure="true"/>
             <slot name="PB05" secure="true"/>
             <slot name="PB06" secure="true"/>
@@ -105,9 +104,13 @@
             <slot name="PC09" secure="true"/>
             <slot name="PC10" secure="true"/>
             <slot name="PC11" secure="true"/>
+            <slot name="PC12" secure="true"/>
             <slot name="PC13" secure="true"/>
         </peripheral>
         <peripheral name="PORTD" group="PORT">
+            <slot name="PD00" secure="true"/>
+            <slot name="PD04" secure="true"/>
+            <slot name="PD07" secure="true"/>
             <slot name="PD08" secure="true"/>
             <slot name="PD09" secure="true"/>
             <slot name="PD12" secure="true"/>

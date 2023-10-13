@@ -11,5 +11,6 @@
 
 #define F_RET_ERROR_GENERIC                  -10000
 
+#define F_RET_MOTOR_STOP_FLAG_TIMEOUT        -10100
 
 #endif /* RETURN_CODES_H_ */

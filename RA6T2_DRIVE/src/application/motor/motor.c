@@ -5,9 +5,10 @@
  *      Author: Ch.Leclercq
  */
 
-
-#include "moteur.h"
-
+#include <c_timespan/c_timespan.h>
+#include <h_time/h_time.h>
+#include <motor/motor.h>
+#include <return_codes.h>
 
 timer_instance_t mot0_g_timer0;
 timer_cfg_t mot0_g_timer0_cfg;
@@ -107,6 +108,8 @@ void motor_structures_init(void)
     motor0.motor_ctrl_instance = &g_mot_120_degree0;
     motor0.motor_driver_instance = &g_mot_120_driver0;
     motor0.motor_hall_instance = &g_mot_120_control_hall0;
+
+
     //---------------------------------------------------------------------
     // MOTOR1
     //---------------------------------------------------------------------
@@ -210,7 +213,9 @@ return_t motor_is_speed_achieved(st_motor_t *mot,bool_t *res)
     ASSERT(res  != NULL)
 #endif
 
-    motor_120_control_hall_instance_ctrl_t * p_instance_ctrl = (motor_120_control_hall_instance_ctrl_t *) mot->motor_hall_instance;
+	volatile motor_120_control_instance_t *mot_inst = (motor_120_control_instance_t*)mot->motor_hall_instance;
+
+    volatile motor_120_control_hall_instance_ctrl_t * p_instance_ctrl = (motor_120_control_hall_instance_ctrl_t *) (mot_inst->p_ctrl);
 
     if(p_instance_ctrl->active == MOTOR_120_CONTROL_STATUS_ACTIVE)
     {
@@ -236,6 +241,11 @@ return_t motor_is_speed_achieved(st_motor_t *mot,bool_t *res)
             }
             else
             {
+            	motor_120_control_cfg_t *pcfg = (motor_120_control_cfg_t*)(mot_inst->p_cfg);
+            	if( (p_instance_ctrl->f4_v_ref <= pcfg->f4_min_drive_v+0.2f) ||
+                    (p_instance_ctrl->f4_v_ref >= pcfg->f4_max_drive_v-0.2f))
+            	*res = TRUE;
+            	else
                 *res = FALSE;
             }
         }
@@ -247,6 +257,36 @@ return_t motor_is_speed_achieved(st_motor_t *mot,bool_t *res)
 
     return ret;
 }
+
+return_t motor_wait_stop(st_motor_t *mot)
+{
+	return_t ret=X_RET_OK;
+
+#if FW_CHECK_PARAM_ENABLE == 1
+    ASSERT(mot  != NULL)
+#endif
+
+	c_timespan_t ts;
+    h_time_update(&ts);
+	motor_120_control_wait_stop_flag_t flg_wait_stop = MOTOR_120_CONTROL_WAIT_STOP_FLAG_SET;
+
+
+    while (MOTOR_120_CONTROL_WAIT_STOP_FLAG_SET == flg_wait_stop)
+	{
+    	mot->motor_ctrl_instance->p_api->waitStopFlagGet(mot->motor_ctrl_instance->p_ctrl, &flg_wait_stop);
+    	bool_t res=FALSE;
+    	h_time_is_elapsed_ms(&ts, 1000, &res);
+    	if(res == TRUE)
+    	{
+    		ERROR_SET_AND_RETURN(F_RET_MOTOR_STOP_FLAG_TIMEOUT);
+    	}
+    	h_time_update(&ts);
+	}
+
+	return ret;
+}
+
+
 static void gpt_periodset (timer_ctrl_t * const p_ctrl, uint32_t const period_counts, uint32_t const value)
 {
     gpt_instance_ctrl_t * p_instance_ctrl = (gpt_instance_ctrl_t *) p_ctrl;
@@ -272,7 +312,7 @@ void mtr0_callback_120_degree(motor_callback_args_t * p_args)
             if (MOTOR_120_DEGREE_CTRL_STATUS_ERROR != motor0.status)
             {
 
-                motor0.motor_ctrl_instance->p_api->errorCheck(motor0.motor_ctrl_instance->p_ctrl, &motor0.check_error);
+                motor0.motor_ctrl_instance->p_api->errorCheck(motor0.motor_ctrl_instance->p_ctrl, &motor0.error);
             }
         }
         break;
@@ -315,7 +355,7 @@ void mtr1_callback_120_degree(motor_callback_args_t * p_args)
         {
             if (MOTOR_120_DEGREE_CTRL_STATUS_ERROR != motor1.status)
             {
-                motor1.motor_ctrl_instance->p_api->errorCheck(motor1.motor_ctrl_instance->p_ctrl, &motor1.check_error);
+                motor1.motor_ctrl_instance->p_api->errorCheck(motor1.motor_ctrl_instance->p_ctrl, &motor1.error);
             }
 
             //mtr_ics_interrupt_process();

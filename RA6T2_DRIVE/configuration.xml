@@ -2866,7 +2866,12 @@
     </config>
   </raModuleConfiguration>
   <raPinConfiguration>
+    <symbolicName propertyId="pa15.symbolic_name" value="LED1"/>
     <symbolicName propertyId="pc07.symbolic_name" value="VM_CMD"/>
+    <symbolicName propertyId="pc12.symbolic_name" value="M12_ENRH"/>
+    <symbolicName propertyId="pd00.symbolic_name" value="M12_ENRL"/>
+    <symbolicName propertyId="pd04.symbolic_name" value="M12_AUTO"/>
+    <symbolicName propertyId="pd07.symbolic_name" value="M12_DERH"/>
     <symbolicName propertyId="pd08.symbolic_name" value="MOT2_CS"/>
     <symbolicName propertyId="pd09.symbolic_name" value="MOT1_CS"/>
     <pincfg active="true" name="RA6T2-MCK.pincfg" selected="true" symbol="g_bsp_pin_cfg">
@@ -2910,11 +2915,9 @@
       <configSetting altId="gpt9.mode.gtiocaandgtiocb.free" configurationId="gpt9.mode"/>
       <configSetting altId="gpt_poegd.gtetrgd.pc13" configurationId="gpt_poegd.gtetrgd"/>
       <configSetting altId="gpt_poegd.mode.enabled.free" configurationId="gpt_poegd.mode"/>
-      <configSetting altId="jtag_fslash_swd.mode.jtag.free" configurationId="jtag_fslash_swd.mode"/>
-      <configSetting altId="jtag_fslash_swd.tck.pa14" configurationId="jtag_fslash_swd.tck"/>
-      <configSetting altId="jtag_fslash_swd.tdi.pa15" configurationId="jtag_fslash_swd.tdi"/>
-      <configSetting altId="jtag_fslash_swd.tdo.pb03" configurationId="jtag_fslash_swd.tdo"/>
-      <configSetting altId="jtag_fslash_swd.tms.pa13" configurationId="jtag_fslash_swd.tms"/>
+      <configSetting altId="jtag_fslash_swd.mode.swd.free" configurationId="jtag_fslash_swd.mode"/>
+      <configSetting altId="jtag_fslash_swd.swclk.pa14" configurationId="jtag_fslash_swd.swclk"/>
+      <configSetting altId="jtag_fslash_swd.swdio.pa13" configurationId="jtag_fslash_swd.swdio"/>
       <configSetting altId="p212.cgc.extal" configurationId="p212"/>
       <configSetting altId="p212.gpio_mode.gpio_mode_peripheral" configurationId="p212.gpio_mode"/>
       <configSetting altId="pa00.adc12.an000" configurationId="pa00"/>
@@ -2941,17 +2944,16 @@
       <configSetting altId="pa10.gpio_mode.gpio_mode_peripheral" configurationId="pa10.gpio_mode"/>
       <configSetting altId="pa11.gpt9.gtioc9b" configurationId="pa11"/>
       <configSetting altId="pa11.gpio_mode.gpio_mode_peripheral" configurationId="pa11.gpio_mode"/>
-      <configSetting altId="pa13.jtag_fslash_swd.tms" configurationId="pa13"/>
+      <configSetting altId="pa13.jtag_fslash_swd.swdio" configurationId="pa13"/>
       <configSetting altId="pa13.gpio_mode.gpio_mode_peripheral" configurationId="pa13.gpio_mode"/>
-      <configSetting altId="pa14.jtag_fslash_swd.tck" configurationId="pa14"/>
+      <configSetting altId="pa14.jtag_fslash_swd.swclk" configurationId="pa14"/>
       <configSetting altId="pa14.gpio_mode.gpio_mode_peripheral" configurationId="pa14.gpio_mode"/>
-      <configSetting altId="pa15.jtag_fslash_swd.tdi" configurationId="pa15"/>
-      <configSetting altId="pa15.gpio_mode.gpio_mode_peripheral" configurationId="pa15.gpio_mode"/>
+      <configSetting altId="pa15.output.low" configurationId="pa15"/>
+      <configSetting altId="pa15.gpio_speed.gpio_speed_h" configurationId="pa15.gpio_drivecapacity"/>
+      <configSetting altId="pa15.gpio_mode.gpio_mode_out.low" configurationId="pa15.gpio_mode"/>
       <configSetting altId="pb01.input" configurationId="pb01"/>
       <configSetting altId="pb01.gpio_irq.gpio_irq_enabled" configurationId="pb01.gpio_irq"/>
       <configSetting altId="pb01.gpio_mode.gpio_mode_in" configurationId="pb01.gpio_mode"/>
-      <configSetting altId="pb03.jtag_fslash_swd.tdo" configurationId="pb03"/>
-      <configSetting altId="pb03.gpio_mode.gpio_mode_peripheral" configurationId="pb03.gpio_mode"/>
       <configSetting altId="pb04.gpt4.gtioc4a" configurationId="pb04"/>
       <configSetting altId="pb04.gpio_mode.gpio_mode_peripheral" configurationId="pb04.gpio_mode"/>
       <configSetting altId="pb05.gpt4.gtioc4b" configurationId="pb05"/>
@@ -2990,8 +2992,16 @@
       <configSetting altId="pc10.gpio_mode.gpio_mode_peripheral" configurationId="pc10.gpio_mode"/>
       <configSetting altId="pc11.sci1.rxd1" configurationId="pc11"/>
       <configSetting altId="pc11.gpio_mode.gpio_mode_peripheral" configurationId="pc11.gpio_mode"/>
+      <configSetting altId="pc12.input" configurationId="pc12"/>
+      <configSetting altId="pc12.gpio_mode.gpio_mode_in" configurationId="pc12.gpio_mode"/>
       <configSetting altId="pc13.gpt_poegd.gtetrgd" configurationId="pc13"/>
       <configSetting altId="pc13.gpio_mode.gpio_mode_peripheral" configurationId="pc13.gpio_mode"/>
+      <configSetting altId="pd00.input" configurationId="pd00"/>
+      <configSetting altId="pd00.gpio_mode.gpio_mode_in" configurationId="pd00.gpio_mode"/>
+      <configSetting altId="pd04.input" configurationId="pd04"/>
+      <configSetting altId="pd04.gpio_mode.gpio_mode_in" configurationId="pd04.gpio_mode"/>
+      <configSetting altId="pd07.input" configurationId="pd07"/>
+      <configSetting altId="pd07.gpio_mode.gpio_mode_in" configurationId="pd07.gpio_mode"/>
       <configSetting altId="pd08.output.high" configurationId="pd08"/>
       <configSetting altId="pd08.gpio_mode.gpio_mode_out.high" configurationId="pd08.gpio_mode"/>
       <configSetting altId="pd09.output.high" configurationId="pd09"/>

@@ -5,8 +5,8 @@
  *      Author: Ch.Leclercq
  */
 
-#ifndef APPLICATION_MOTEUR_MOTEUR_H_
-#define APPLICATION_MOTEUR_MOTEUR_H_
+#ifndef APPLICATION_MOTOR_MOTOR_H_
+#define APPLICATION_MOTOR_MOTOR_H_
 
 #include <stdint.h>
 #include "rm_motor_api.h"
@@ -25,7 +25,7 @@ typedef struct st_motor_t
     motor_120_driver_instance_t *motor_driver_instance;
     motor_120_control_instance_t *motor_hall_instance;
     uint8_t status;
-    uint16_t check_error;
+    uint16_t error;
 }st_motor_t;
 
 
@@ -37,5 +37,7 @@ void motor_structures_init(void);
 void motor_init_fsp(void);
 
 return_t motor_is_speed_achieved(st_motor_t *mot,bool_t *res);
+return_t motor_wait_stop(st_motor_t *mot);
 
-#endif /* APPLICATION_MOTEUR_MOTEUR_H_ */
+
+#endif /* APPLICATION_MOTOR_MOTOR_H_ */

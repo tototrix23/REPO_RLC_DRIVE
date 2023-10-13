@@ -42,8 +42,10 @@
 #include <_lib_impl_cust/impl_spi_motors/impl_spi_motors.h>
 #include <_lib_impl_cust/impl_time/impl_time.h>
 #include <_lib_impl_cust/impl_log/impl_log.h>
-#include <moteur/moteur.h>
 #include <adc/adc.h>
+#include <motor/motor.h>
+#include <motor/motor_process/motor_process.h>
+#include <remotectrl/remotectrl.h>
 
 
 #undef  LOG_LEVEL
@@ -214,6 +216,7 @@ void mtr_main(void)
     impl_time_start_adc();
     while(1)
     {
+    	remotectrl_process();
         board_ui();
 
         bool_t res;
@@ -232,6 +235,7 @@ void mtr_main(void)
 static void board_ui(void)
 {
 
+	volatile return_t ret;
     static uint8_t mot0_error = 0;
     static uint8_t mot1_error = 0;
 
@@ -248,11 +252,15 @@ static void board_ui(void)
     {
         case MOTOR_120_DEGREE_CTRL_STATUS_STOP:
         {
+
+        	ret = motor_wait_stop(&motor0);
+
             while (MOTOR_120_CONTROL_WAIT_STOP_FLAG_SET == u1_temp_flg_wait_stop)
             {
 
                 g_mot_120_degree0.p_api->waitStopFlagGet(g_mot_120_degree0.p_ctrl, &u1_temp_flg_wait_stop);
             }
+            R_IOPORT_PinWrite(&g_ioport_ctrl, LED1,BSP_IO_LEVEL_LOW );
             LOG_I(LOG_STD,"mot0 RUN");
             mot0_error = 0;
             g_mot_120_degree0.p_api->run(g_mot_120_degree0.p_ctrl);
@@ -263,7 +271,17 @@ static void board_ui(void)
 
         case MOTOR_120_DEGREE_CTRL_STATUS_RUN:
         {
-
+           bool_t res;
+           //
+           motor_is_speed_achieved(&motor0,&res);
+           if(res == TRUE)
+           {
+        	   R_IOPORT_PinWrite(&g_ioport_ctrl, LED1,BSP_IO_LEVEL_HIGH );
+           }
+           else
+           {
+        	   R_IOPORT_PinWrite(&g_ioport_ctrl, LED1,BSP_IO_LEVEL_LOW );
+           }
         }
         break;
 
@@ -271,6 +289,7 @@ static void board_ui(void)
         {
             if(mot0_error == 0)
             {
+            	R_IOPORT_PinWrite(&g_ioport_ctrl, LED1,BSP_IO_LEVEL_LOW );
                 mot0_error = 1;
                 g_mot_120_degree0.p_api->errorCheck(g_mot_120_degree0.p_ctrl, &g_u2_chk_error0);
                 LOG_E(LOG_STD,"mot0 ERROR: %d",g_u2_chk_error0);
