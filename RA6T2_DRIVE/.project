@@ -39,7 +39,7 @@
 		<link>
 			<name>R_LIB</name>
 			<type>2</type>
-			<location>D:/REPO_RLC_DRIVE/REPO_RLC_DRIVE/R_LIB</location>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/R_LIB</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
