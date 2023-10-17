@@ -13,6 +13,6 @@
 #include <_core/c_common.h>
 #include <motor/motor.h>
 
-return_t motor_process(st_motor_t *mot);
+return_t drive_process(void);
 
 #endif /* APPLICATION_MOTOR_MOTOR_PROCESS_MOTOR_PROCESS_H_ */

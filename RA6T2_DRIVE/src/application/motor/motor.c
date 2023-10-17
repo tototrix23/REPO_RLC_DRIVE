@@ -10,6 +10,11 @@
 #include <motor/motor.h>
 #include <return_codes.h>
 
+#undef  LOG_LEVEL
+#define LOG_LEVEL     LOG_LVL_DEBUG
+#undef  LOG_MODULE
+#define LOG_MODULE    "drive"
+
 timer_instance_t mot0_g_timer0;
 timer_cfg_t mot0_g_timer0_cfg;
 timer_instance_t mot0_g_timer1;
@@ -50,11 +55,13 @@ motor_cfg_t g_mot_120_degree1_cfg;
 motor_instance_t g_mot_120_degree1;
 st_motor_t motor1;
 
+st_drive_t motors_instance;
+
 static void gpt_periodset (timer_ctrl_t * const p_ctrl, uint32_t const period_counts, uint32_t const value);
 
 void motor_structures_init(void)
 {
-
+    memset(&motors_instance,0x00,sizeof(st_drive_t));
     //---------------------------------------------------------------------
     // MOTOR0
     //---------------------------------------------------------------------
@@ -163,6 +170,10 @@ void motor_structures_init(void)
     motor1.motor_driver_instance = &g_mot_120_driver1;
     motor1.motor_hall_instance = &g_mot_120_control_hall1;
 
+
+    motors_instance.motorH = &motor0;
+    motors_instance.motorL = &motor1;
+    motors_instance.mode = MOTOR_UNKNOWN_MODE;
 }
 
 
@@ -172,7 +183,7 @@ void motor_init_fsp(void)
 
 
       motor_ext_cfg_t mot_ext_cfg;
-      mot_ext_cfg.motor_type = MOTOR_TYPE_BLDC;
+      mot_ext_cfg.motor_technology = MOTOR_TECH_BLDC;
       mot_ext_cfg.pulses_counting_reverse = 0;
 
       g_mot_120_degree0.p_api->open(g_mot_120_degree0.p_ctrl, g_mot_120_degree0.p_cfg);

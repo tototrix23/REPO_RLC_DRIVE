@@ -4,9 +4,26 @@
  *  Created on: 13 oct. 2023
  *      Author: Ch.Leclercq
  */
+#include "drive_process.h"
+
+#undef  LOG_LEVEL
+#define LOG_LEVEL     LOG_LVL_DEBUG
+#undef  LOG_MODULE
+#define LOG_MODULE    "drive"
+
+return_t motor_process(st_motor_t *mot);
+
+return_t drive_process(void)
+{
 
 
-#include "motor_process.h"
+    motor_process(motors_instance.motorH);
+    motor_process(motors_instance.motorL);
+    return X_RET_OK;
+}
+
+
+
 
 return_t motor_process(st_motor_t *mot)
 {

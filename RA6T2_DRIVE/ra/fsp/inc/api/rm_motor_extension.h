@@ -15,18 +15,18 @@ FSP_HEADER
 //@formatter:off
 
 /** Enumeration des differentes technologies à supporter. */
-typedef enum e_motor_ext_type
+typedef enum e_motor_ext_technology
 {
-    MOTOR_TYPE_UNKNOWN = 0,
-    MOTOR_TYPE_DC,
-    MOTOR_TYPE_BLDC,
-} motor_ext_type_t;
+    MOTOR_TECH_UNKNOWN = 0,
+    MOTOR_TECH_DC,
+    MOTOR_TECH_BLDC,
+} motor_ext_technology_t;
 
 /** Structure de configuration statique pour le moteur.*/
 typedef struct st_motor_ext_cfg
 {
-    motor_ext_type_t   motor_type;   ///< Indique la technologie du moteur.
-    uint8_t            pulses_counting_reverse;
+    motor_ext_technology_t   motor_technology;   ///< Indique la technologie du moteur.
+    uint8_t                  pulses_counting_reverse;
 } motor_ext_cfg_t;
 
 /** Structure contenant la consigne de rotation en mode libre

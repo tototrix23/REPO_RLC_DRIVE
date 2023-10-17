@@ -95,12 +95,12 @@ void custom_adc_interrupt(adc_callback_args_t *p_args)
     {
         if (p_args->group_mask == ADC_GROUP_MASK_0)
         {
-            p_args->p_context = motor0.motor_driver_instance;//  &g_mot_120_driver0;
+            p_args->p_context = motors_instance.motorH->motor_driver_instance;//  motor0.motor_driver_instance;//  &g_mot_120_driver0;
             rm_motor_120_driver_cyclic(p_args);
         }
         if (p_args->group_mask == ADC_GROUP_MASK_2)
         {
-            p_args->p_context = motor1.motor_driver_instance;//&g_mot_120_driver1;
+            p_args->p_context = motors_instance.motorL->motor_driver_instance;//motor1.motor_driver_instance;//&g_mot_120_driver1;
             rm_motor_120_driver_cyclic(p_args);
         }
         if (p_args->group_mask == ADC_GROUP_MASK_8)

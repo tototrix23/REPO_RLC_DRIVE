@@ -44,7 +44,7 @@
 #include <_lib_impl_cust/impl_log/impl_log.h>
 #include <adc/adc.h>
 #include <motor/motor.h>
-#include <motor/motor_process/motor_process.h>
+#include <motor/drive_process/drive_process.h>
 #include <remotectrl/remotectrl.h>
 
 
@@ -234,7 +234,7 @@ void mtr_main(void)
 
 static void board_ui(void)
 {
-
+    /*
 	volatile return_t ret;
     static uint8_t mot0_error = 0;
     static uint8_t mot1_error = 0;
@@ -414,7 +414,7 @@ static void board_ui(void)
     settings.timeout_hall_ms = 0;
     settings.percent = 20;
     g_mot_120_degree1.p_api->speedSetOpenLoop(g_mot_120_degree1.p_ctrl,settings);
-
+    */
 }
 
 
@@ -474,6 +474,7 @@ static void motor_fsp_init(void)
     h_time_update(&ts1);
     R_POEG_Open(g_poeg0.p_ctrl, g_poeg0.p_cfg);
     motor_structures_init();
+    motor_init_type(MOTOR_TYPE_RM_ITOH_BRAKE);
     adc_init();
     motor_init_fsp();
 

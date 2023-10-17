@@ -1273,7 +1273,7 @@ static void rm_motor_120_control_hall_pattern_set (motor_120_control_hall_instan
 static void rm_motor_120_control_hall_pattern_first60 (motor_120_control_hall_instance_ctrl_t * p_ctrl,
                                                        uint8_t                                  u1_signal)
 {
-    if(p_ctrl->extCfg->motor_type == MOTOR_TYPE_BLDC)
+    if(p_ctrl->extCfg->motor_technology == MOTOR_TECH_BLDC)
     {
         /* set voltage pattern */
         if (MOTOR_120_CONTROL_ROTATION_DIRECTION_CW == p_ctrl->direction) /* check rotational direction */
@@ -1375,7 +1375,7 @@ static void rm_motor_120_control_hall_pattern_first60 (motor_120_control_hall_in
             /* Do nothing */
         }
     }
-    else if(p_ctrl->extCfg->motor_type == MOTOR_TYPE_DC)
+    else if(p_ctrl->extCfg->motor_technology == MOTOR_TECH_DC)
     {
         if (MOTOR_120_CONTROL_ROTATION_DIRECTION_CW == p_ctrl->direction)
         {
@@ -1402,7 +1402,7 @@ static void rm_motor_120_control_hall_pattern_first60 (motor_120_control_hall_in
 static void rm_motor_120_control_hall_pattern_first60_comp (motor_120_control_hall_instance_ctrl_t * p_ctrl,
                                                             uint8_t                                  u1_signal)
 {
-    if(p_ctrl->extCfg->motor_type == MOTOR_TYPE_BLDC)
+    if(p_ctrl->extCfg->motor_technology == MOTOR_TECH_BLDC)
     {
         /* set voltage pattern */
         if (MOTOR_120_CONTROL_ROTATION_DIRECTION_CW == p_ctrl->direction) /* check rotational direction */
@@ -1504,7 +1504,7 @@ static void rm_motor_120_control_hall_pattern_first60_comp (motor_120_control_ha
             /* Do nothing */
         }
     }
-    else if(p_ctrl->extCfg->motor_type == MOTOR_TYPE_DC)
+    else if(p_ctrl->extCfg->motor_technology == MOTOR_TECH_DC)
     {
         if (MOTOR_120_CONTROL_ROTATION_DIRECTION_CW == p_ctrl->direction)
         {

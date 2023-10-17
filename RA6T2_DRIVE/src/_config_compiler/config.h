@@ -66,6 +66,7 @@
 #define ADC_VHALL1_ADAPT(f)     (f*4.3222f)
 #define ADC_VHALL2_ADAPT(f)     (f*4.3222f)
 
+#define REMOTECTRL_ACTIVE_LEVEL 0
 
 
 #endif /* CONFIG_COMPILER_CONFIG_H_ */
