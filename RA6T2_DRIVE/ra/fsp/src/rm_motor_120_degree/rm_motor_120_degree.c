@@ -405,13 +405,18 @@ fsp_err_t RM_MOTOR_120_DEGREE_SpeedSet (motor_ctrl_t * const p_ctrl, float const
         (motor_120_degree_extended_cfg_t *) p_instance_ctrl->p_cfg->p_extend;
 
     p_instance_ctrl->extSettings.active = 0;
-    p_instance_ctrl->f_speed_rpm = speed_rpm;
+
+    if(p_instance_ctrl->extCfg.speed_reverse == 0)
+        p_instance_ctrl->f_speed_rpm = speed_rpm;
+    else
+    	p_instance_ctrl->f_speed_rpm = -speed_rpm;
+
 
     if (p_extended_cfg->p_motor_120_control_instance != NULL)
     {
         err = p_extended_cfg->p_motor_120_control_instance->p_api->speedSet(
             p_extended_cfg->p_motor_120_control_instance->p_ctrl,
-            speed_rpm);
+			p_instance_ctrl->f_speed_rpm);
     }
 
     return err;
@@ -683,6 +688,11 @@ fsp_err_t RM_MOTOR_120_DEGREE_ExtSettingsSet(motor_ctrl_t *const p_ctrl, motor_e
     p_instance_ctrl->extSettings.active = 1;
     p_instance_ctrl->extSettings.voltage = 0.0;
     p_instance_ctrl->extSettings.settings = settings;
+
+    if(p_instance_ctrl->extCfg.speed_reverse == 1)
+    {
+    	p_instance_ctrl->extSettings.settings.percent = -p_instance_ctrl->extSettings.settings.percent;
+    }
 
     motor_120_degree_extended_cfg_t *p_extended_cfg =
             (motor_120_degree_extended_cfg_t*) p_instance_ctrl->p_cfg->p_extend;

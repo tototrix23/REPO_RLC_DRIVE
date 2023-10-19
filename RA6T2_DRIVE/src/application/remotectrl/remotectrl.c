@@ -30,10 +30,7 @@ return_t remotectrl_process(void)
 	R_IOPORT_PinRead(&g_ioport_ctrl, M12_DERH,&m12_derh );
 
 
-	if((m12_auto == REMOTECTRL_ACTIVE_LEVEL) ||
-	   (m12_enrl == REMOTECTRL_ACTIVE_LEVEL) ||
-	   (m12_enrh == REMOTECTRL_ACTIVE_LEVEL) ||
-	   (m12_derh == REMOTECTRL_ACTIVE_LEVEL))
+	if(m12_auto == REMOTECTRL_ACTIVE_LEVEL)
 	{
 	    if(motors_instance.mode != MOTOR_MANUAL_MODE)
 	    {

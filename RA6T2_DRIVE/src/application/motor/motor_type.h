@@ -56,6 +56,14 @@ typedef enum e_motor_control_type
     MOTOR_BRAKE_MODE = 2,
 }motor_control_type_t;
 
+typedef enum e_motor_next_phase_condition
+{
+    MOTOR_NEXT_CONDITION_NONE = 0,
+	MOTOR_NEXT_CONDITION_SPEEDH = 1,
+	MOTOR_NEXT_CONDITION_SPEEDL = 2,
+	MOTOR_NEXT_CONDITION_SPEEDHL = 3,
+}e_motor_next_phase_condition_t;
+
 typedef struct st_motor_control
 {
     motor_control_type_t mode;
@@ -73,19 +81,24 @@ typedef struct st_motor_control
 
 typedef struct st_motor_phase
 {
-    motor_control_t params_motorH;
-    motor_control_t params_motorL;
+	e_motor_next_phase_condition_t next_condition;
+	uint32_t condition_timeout_ms;
+    motor_control_t params_motors[2];
 }motor_phase_t;
 
 
 typedef struct st_motor_profil_t
 {
-    uint32_t initialised;
-    motor_type_t type;
-    motor_ext_technology_t technology;
+    uint32_t initialised; ///< Permet de ne pas initialiser plusieurs fois le bloc
+    motor_type_t type; ///< Modèle de moteurs utilisés
+    motor_ext_technology_t technology; ///< Technologie des moteurs
+    motor_ext_cfg_t cfg_motorH; ///< Configuration du comportement du moteur haut
+    motor_ext_cfg_t cfg_motorL; ///< Configuration du comportement du moteur bas
 
     struct
     {
+    	c_linked_list_t error_sequence;
+
         struct
         {
             c_linked_list_t off_sequence;

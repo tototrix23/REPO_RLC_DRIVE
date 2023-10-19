@@ -27,6 +27,7 @@ typedef struct st_motor_ext_cfg
 {
     motor_ext_technology_t   motor_technology;   ///< Indique la technologie du moteur.
     uint8_t                  pulses_counting_reverse;
+    uint8_t                  speed_reverse;
 } motor_ext_cfg_t;
 
 /** Structure contenant la consigne de rotation en mode libre

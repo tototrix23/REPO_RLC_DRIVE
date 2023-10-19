@@ -29,7 +29,7 @@
 #define LOG_ENABLE                    1
 #define R_LIB_CHECK_PARAM_ENABLE      1
 #define R_LIB_ASSERT_MODE             R_LIB_ASSERT_RETURN_CODE
-#define R_LIB_LOG_LEVEL               LOG_LVL_WARN
+#define R_LIB_LOG_LEVEL               LOG_LVL_DEBUG
 
 #define USE_SALLOC                    1
 #define SALLOC_SIZE_BYTES             4000U

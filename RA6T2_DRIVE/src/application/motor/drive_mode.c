@@ -7,6 +7,7 @@
 #include <remotectrl/remotectrl.h>
 #include "motor.h"
 #include "drive_mode.h"
+#include <motor/modes/init_mode.h>
 
 #undef  LOG_LEVEL
 #define LOG_LEVEL     LOG_LVL_DEBUG
@@ -26,6 +27,7 @@ return_t set_drive_mode(drive_mode_t mode)
 
             case MOTOR_MANUAL_MODE:
                 LOG_D(LOG_STD,"Set manual mode");
+                manual_mode_start();
             break;
 
             case MOTOR_INIT_MODE:

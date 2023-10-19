@@ -225,7 +225,15 @@ void mtr_main(void)
         {
             h_time_update(&ts);
             adc_measures_update();
-            LOG_D(LOG_STD,"IIN: %5d; VIN: %5d; VBATT: %5d; VH1: %5d; VH2: %5d",adc_inst.iin,adc_inst.vin,adc_inst.vbatt,adc_inst.vhall1,adc_inst.vhall2);
+            //LOG_D(LOG_STD,"IIN: %5d; VIN: %5d; VBATT: %5d; VH1: %5d; VH2: %5d",adc_inst.iin,adc_inst.vin,adc_inst.vbatt,adc_inst.vhall1,adc_inst.vhall2);
+            int32_t pulsesH=0;
+            int32_t pulsesL=0;
+
+            motors_instance.motorH->motor_ctrl_instance->p_api->pulsesGet( motors_instance.motorH->motor_ctrl_instance->p_ctrl,&pulsesH);
+            motors_instance.motorL->motor_ctrl_instance->p_api->pulsesGet( motors_instance.motorL->motor_ctrl_instance->p_ctrl,&pulsesL);
+            LOG_D(LOG_STD,"pulsesH: %05d - pulsesL: %05d",pulsesH,pulsesL);
+
+
         }
     }
 
@@ -234,6 +242,9 @@ void mtr_main(void)
 
 static void board_ui(void)
 {
+
+	drive_process();
+    remotectrl_process();
     /*
 	volatile return_t ret;
     static uint8_t mot0_error = 0;
@@ -478,6 +489,8 @@ static void motor_fsp_init(void)
     adc_init();
     motor_init_fsp();
 
+    motors_instance.motorH->motor_ctrl_instance->p_api->pulsesSet( motors_instance.motorH->motor_ctrl_instance->p_ctrl,0);
+    motors_instance.motorL->motor_ctrl_instance->p_api->pulsesSet( motors_instance.motorL->motor_ctrl_instance->p_ctrl,0);
 }
 
 

@@ -173,24 +173,19 @@ void motor_structures_init(void)
 
     motors_instance.motorH = &motor0;
     motors_instance.motorL = &motor1;
+    motors_instance.motors[0] =  motors_instance.motorH;
+    motors_instance.motors[1] =  motors_instance.motorL;
     motors_instance.mode = MOTOR_UNKNOWN_MODE;
 }
 
 
 void motor_init_fsp(void)
 {
-
-
-
-      motor_ext_cfg_t mot_ext_cfg;
-      mot_ext_cfg.motor_technology = MOTOR_TECH_BLDC;
-      mot_ext_cfg.pulses_counting_reverse = 0;
-
       g_mot_120_degree0.p_api->open(g_mot_120_degree0.p_ctrl, g_mot_120_degree0.p_cfg);
-      g_mot_120_degree0.p_api->configSet(g_mot_120_degree0.p_ctrl,mot_ext_cfg);
+      g_mot_120_degree0.p_api->configSet(g_mot_120_degree0.p_ctrl,motors_instance.profil.cfg_motorH);
       g_mot_120_degree0.p_api->pulsesSet(g_mot_120_degree0.p_ctrl,0);
       g_mot_120_degree1.p_api->open(g_mot_120_degree1.p_ctrl, g_mot_120_degree1.p_cfg);
-      g_mot_120_degree1.p_api->configSet(g_mot_120_degree1.p_ctrl,mot_ext_cfg);
+      g_mot_120_degree1.p_api->configSet(g_mot_120_degree1.p_ctrl,motors_instance.profil.cfg_motorL);
       g_mot_120_degree1.p_api->pulsesSet(g_mot_120_degree1.p_ctrl,0);
 
       R_GPT_THREE_PHASE_Stop(g_three_phase0.p_ctrl);

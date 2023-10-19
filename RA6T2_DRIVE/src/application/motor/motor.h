@@ -31,6 +31,7 @@ typedef struct st_drive_t
     drive_mode_t mode;
     st_motor_t *motorH;
     st_motor_t *motorL;
+    st_motor_t *motors[2];
     motor_profil_t profil;
 }st_drive_t;
 
